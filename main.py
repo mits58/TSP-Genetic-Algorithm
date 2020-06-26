@@ -12,12 +12,12 @@ import wandb
 
 rnd.seed(1124)
 hyperparameter_defaults = dict(
-    pop_num=200,                # 個体数 -> [100, 300]
-    tournament_size=10,         # トーナメント選択のサイズ
-    tournament_select_num=2,    # トーナメント選択のサイズ
-    elite_select_num=1,         # エリートを選択するサイズ
-    crossover_prob=50,          # 交叉の確率 -> [0, 100]
-    mutation_prob=3,            # 突然変異の確率 -> [0, 100]
+    pop_num=200,                    # 個体数 -> [100, 300]
+    tournament_size=10,             # トーナメントのサイズ -> [5, 100]
+    tournament_select_ratio=0.2,    # トーナメントから何割残すか -> [0, 1]
+    elite_select_num=1,             # エリートを何個残すか -> [1, 20]
+    crossover_prob=50,              # 交叉の確率 -> [0, 100]
+    mutation_prob=3,                # 突然変異の確率 -> [0, 100]
 )
 wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
 
@@ -93,9 +93,9 @@ def evaluate(position_info, all_route, loop=0):
 def selection(all_route, evaluate_value, tournament_select_num,
               tournament_size, elite_select_num, ascending=False):
     """
-    今回は選択として、トーナメント選択、エリート主義を導入しています。
-    トーナメント選択は指定したサイズのトーナメントを作成し、その中で指定数の優良個体を選択します。
-    エリート主義は指定した上位個体を問答無用で次世代に残す手法です。
+    トーナメント選択、エリート主義を導入。
+    トーナメント選択は指定したサイズのトーナメントを作成し、その中で指定数の優良個体を選択。
+    エリート主義は指定した上位個体を問答無用で次世代に残す手法。
     """
 
     select_pop = []
@@ -188,12 +188,13 @@ def save_route(position_info, route, excellent_evaluate_value, loop=0):
     x_coordinate.append(position_info[route[0]][0])
     y_coordinate.append(position_info[route[0]][1])
 
-    plt.figure(figsize=(10, 10), dpi=200)
+    plt.figure(figsize=(4, 4), dpi=300)
     plt.scatter(x_coordinate, y_coordinate)
     plt.plot(x_coordinate, y_coordinate, label=excellent_evaluate_value)
     plt.title("Generation: {}".format(loop))
     plt.legend()
-    plt.savefig("img/tsp{0:03}".format(loop))
+    plt.savefig("img/tsp{0:03}".format(loop),
+                bbox_inches="tight", pad_inches=0.05)
 
 
 def make_gif():
@@ -212,7 +213,7 @@ def make_gif():
 def main():
     # 定数
     num_city = 30  # 都市の数
-    generation_num = 200  # 世代数
+    generation_num = 10  # 世代数
 
     tournament_size = 10
     tournament_select_num = 2
