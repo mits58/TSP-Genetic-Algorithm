@@ -1,15 +1,28 @@
 # coding:utf-8
-import random as rnd
-import matplotlib.pyplot as plt
-import math
 import copy
+import glob
+import math
+import os
+import shutil
+import random as rnd
+
+import matplotlib.pyplot as plt
+from PIL import Image
 import wandb
 
 rnd.seed(1124)
-wandb.init(project="tsp-genetic-algorithm")
+hyperparameter_defaults = dict(
+    pop_num=200,                # 個体数 -> [100, 300]
+    tournament_size=10,         # トーナメント選択のサイズ
+    tournament_select_num=2,    # トーナメント選択のサイズ
+    elite_select_num=1,         # エリートを選択するサイズ
+    crossover_prob=50,          # 交叉の確率 -> [0, 100]
+    mutation_prob=3,            # 突然変異の確率 -> [0, 100]
+)
+wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
 
 
-def generator(num, pop_num):
+def generate_map(num, pop_num):
     """
     引数はnumが地点の数。pop_numが個体数です。
     初期に地点をランダムに作成し、keyを地点番号、座標値をvalueとして辞書を作成しています。
@@ -40,7 +53,9 @@ def generator(num, pop_num):
 
 def evaluate(position_info, all_route, loop=0):
     """
-    ここでは各座標のユークリッド距離の総和を評価値として評価関数を設計しています。
+    ユークリッド距離の総和を評価値として評価関数を設計。
+    エリート個体の評価値と、個体全体の評価値の平均を記録。
+
     show_route()で現世代における最良個体を描画しています。
     """
 
@@ -61,12 +76,16 @@ def evaluate(position_info, all_route, loop=0):
             temp_evaluate_value.append(distance)
         evaluate_value.append(sum(temp_evaluate_value))
 
-    # 一番優秀な個体をmatplotで描画
+    # エリート個体の評価値と、個体全体の評価値の平均値を記録
     excellent_evaluate_value = min(evaluate_value)
-    draw_pop_index = evaluate_value.index(excellent_evaluate_value)
+    mean_evaluate_value = sum(evaluate_value) / len(evaluate_value)
+    wandb.log({"excellent_evaluate_value": excellent_evaluate_value,
+               "mean_evaluate_value": mean_evaluate_value})
 
-    show_route(position_info, all_route[draw_pop_index],
-               int(excellent_evaluate_value), loop=loop + 1)
+    # 一番優秀な個体をmatplotlibで描画、保存
+    draw_pop_index = evaluate_value.index(excellent_evaluate_value)
+    save_route(position_info, all_route[draw_pop_index],
+               int(excellent_evaluate_value), loop=loop)
 
     return evaluate_value
 
@@ -159,10 +178,9 @@ def mutation(pop, mutation_prob):
     return pop
 
 
-def show_route(position_info, route, excellent_evaluate_value, loop=0):
+def save_route(position_info, route, excellent_evaluate_value, loop=0):
     """
-    matplotlibを使用して経路を描画する関数です。
-    plt.savefig()は描画したグラフをpngとして保存するためのものです。
+    matplotlibを使用して経路を描画
     """
 
     x_coordinate = [position_info[route[i]][0] for i in range(len(route))]
@@ -170,38 +188,43 @@ def show_route(position_info, route, excellent_evaluate_value, loop=0):
     x_coordinate.append(position_info[route[0]][0])
     y_coordinate.append(position_info[route[0]][1])
 
+    plt.figure(figsize=(10, 10), dpi=200)
     plt.scatter(x_coordinate, y_coordinate)
     plt.plot(x_coordinate, y_coordinate, label=excellent_evaluate_value)
     plt.title("Generation: {}".format(loop))
     plt.legend()
-
     plt.savefig("img/tsp{0:03}".format(loop))
-    # pngとして保存。カレントディレクトリにimgフォルダを置く必要あり。
-    plt.show()
+
+
+def make_gif():
+    # gif作成
+    files = sorted(glob.glob('./img/*.png'))
+    images = list(map(lambda file: Image.open(file), files))
+    images[0].save('./img/out.gif', save_all=True, append_images=images[1:],
+                   duration=400, loop=0)
+    wandb.log({"transition_best_route": wandb.Video("./img/out.gif")})
+
+    # 使ったファイルの削除
+    shutil.rmtree('img')
+    os.mkdir('img')
 
 
 def main():
-    # 初期生成時のパラメータ
-    num = 30  # 都市の数
-    pop_num = 200  # 個体数
+    # 定数
+    num_city = 30  # 都市の数
     generation_num = 200  # 世代数
 
-    # 選択のパラメータ
     tournament_size = 10
     tournament_select_num = 2
     elite_select_num = 1
 
-    # 交叉の確率
-    crossover_prob = 50
-    # 突然変異の確率
-    mutation_prob = 3
+    # 初期マップ生成
+    position_info, all_route = generate_map(num_city, wandb.config.pop_num)
 
-    # 初期生成
-    position_info, all_route = generator(num, pop_num)
-
-    # 評価
+    # 初期評価
     evaluate_value = evaluate(position_info, all_route)
 
+    # 進化操作
     for loop in range(generation_num):
         # 選択
         select_pop, elite_pop = selection(
@@ -212,15 +235,15 @@ def main():
         next_pop = []
         while True:
             # 交叉
-            pop_1, pop_2 = crossover(select_pop, crossover_prob)
+            pop_1, pop_2 = crossover(select_pop, wandb.config.crossover_prob)
             # 突然変異
-            pop_1 = mutation(pop_1, mutation_prob)
-            pop_2 = mutation(pop_2, mutation_prob)
+            pop_1 = mutation(pop_1, wandb.config.mutation_prob)
+            pop_2 = mutation(pop_2, wandb.config.mutation_prob)
 
             next_pop.append(pop_1)
             next_pop.append(pop_2)
 
-            if len(next_pop) >= pop_num - elite_select_num:
+            if len(next_pop) >= wandb.config.pop_num - elite_select_num:
                 break
 
         # エリート主義。優良個体を次世代へ継承。
@@ -232,8 +255,9 @@ def main():
         # 更新
         all_route = next_pop
 
+    # gifの作成と記録
+    make_gif()
+
 
 if __name__ == '__main__':
-    # main()
-    wandb.log({"test": "test logging"})     # "test"っていう名前でLoggingできる
-    wandb.save("LICENSE")                   # ファイルをLoggingできる
+    main()
