@@ -3,7 +3,10 @@ import random as rnd
 import matplotlib.pyplot as plt
 import math
 import copy
+import wandb
+
 rnd.seed(1124)
+wandb.init(project="tsp-genetic-algorithm")
 
 
 def generator(num, pop_num):
@@ -231,4 +234,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    wandb.log({"test": "test logging"})     # "test"っていう名前でLoggingできる
+    wandb.save("LICENSE")                   # ファイルをLoggingできる

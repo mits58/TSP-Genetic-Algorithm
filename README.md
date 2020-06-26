@@ -30,5 +30,13 @@ Genetic Algorithm for Traveling Salesman Problem
 集団の多様性を維持するために有効な手段。
 
 
+
+## Todo
+- [ ] WandBによるLoggingの追加
+  - 何をLoggingしたいの？
+- [ ] いくつかのHyperparameterのGrid Searchの導入
+  - どういったHyperparameterがある？
+- TSPLIB形式のファイルを読み込めるように
+
 ## Reference
 - メタヒューリスティクスとナチュラルコンピューティング
