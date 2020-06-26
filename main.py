@@ -90,7 +90,7 @@ def evaluate(position_info, all_route, loop=0):
     return evaluate_value
 
 
-def selection(all_route, evaluate_value, tournament_select_num,
+def selection(all_route, evaluate_value, tournament_select_ratio,
               tournament_size, elite_select_num, ascending=False):
     """
     トーナメント選択、エリート主義を導入。
@@ -100,6 +100,7 @@ def selection(all_route, evaluate_value, tournament_select_num,
 
     select_pop = []
     elite_pop = []
+    tournament_select_num = int(tournament_size * tournament_select_ratio)
     # トーナメント選択
     while True:
         select = rnd.sample(evaluate_value, tournament_size)
@@ -212,10 +213,6 @@ def main():
     num_city = 30  # 都市の数
     generation_num = 200  # 世代数
 
-    tournament_size = 10
-    tournament_select_num = 2
-    elite_select_num = 1
-
     # imgフォルダのファイルを掃除
     shutil.rmtree('img')
     os.mkdir('img')
@@ -230,8 +227,9 @@ def main():
     for loop in range(generation_num):
         # 選択
         select_pop, elite_pop = selection(
-            all_route, evaluate_value, tournament_select_num,
-            tournament_size, elite_select_num, ascending=False)
+            all_route, evaluate_value, wandb.config.tournament_select_ratio,
+            wandb.config.tournament_size, wandb.config.elite_select_num,
+            ascending=False)
 
         # 選択した個体の中から2個体選択し交叉や突然変異を適用する。
         next_pop = []
@@ -245,7 +243,7 @@ def main():
             next_pop.append(pop_1)
             next_pop.append(pop_2)
 
-            if len(next_pop) >= wandb.config.pop_num - elite_select_num:
+            if len(next_pop) >= wandb.config.pop_num - wandb.config.elite_select_num:
                 break
 
         # エリート主義。優良個体を次世代へ継承。
