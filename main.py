@@ -195,6 +195,7 @@ def save_route(position_info, route, excellent_evaluate_value, loop=0):
     plt.legend()
     plt.savefig("img/tsp{0:03}".format(loop),
                 bbox_inches="tight", pad_inches=0.05)
+    plt.close()
 
 
 def make_gif():
@@ -205,10 +206,6 @@ def make_gif():
                    duration=400, loop=0)
     wandb.log({"transition_best_route": wandb.Video("./img/out.gif")})
 
-    # 使ったファイルの削除
-    shutil.rmtree('img')
-    os.mkdir('img')
-
 
 def main():
     # 定数
@@ -218,6 +215,10 @@ def main():
     tournament_size = 10
     tournament_select_num = 2
     elite_select_num = 1
+
+    # imgフォルダのファイルを掃除
+    shutil.rmtree('img')
+    os.mkdir('img')
 
     # 初期マップ生成
     position_info, all_route = generate_map(num_city, wandb.config.pop_num)
