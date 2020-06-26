@@ -36,7 +36,7 @@ Genetic Algorithm for Traveling Salesman Problem
   - 何をLoggingしたいの？
 - [ ] いくつかのHyperparameterのGrid Searchの導入
   - どういったHyperparameterがある？
-- TSPLIB形式のファイルを読み込めるように
+- [ ] TSPLIB形式のファイルを読み込めるように
 
 ## Reference
 - メタヒューリスティクスとナチュラルコンピューティング
