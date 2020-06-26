@@ -188,7 +188,7 @@ def save_route(position_info, route, excellent_evaluate_value, loop=0):
     x_coordinate.append(position_info[route[0]][0])
     y_coordinate.append(position_info[route[0]][1])
 
-    plt.figure(figsize=(4, 4), dpi=300)
+    plt.figure(figsize=(4, 4), dpi=100)
     plt.scatter(x_coordinate, y_coordinate)
     plt.plot(x_coordinate, y_coordinate, label=excellent_evaluate_value)
     plt.title("Generation: {}".format(loop))
@@ -213,7 +213,7 @@ def make_gif():
 def main():
     # 定数
     num_city = 30  # 都市の数
-    generation_num = 10  # 世代数
+    generation_num = 200  # 世代数
 
     tournament_size = 10
     tournament_select_num = 2
