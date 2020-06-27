@@ -21,6 +21,7 @@ hyperparameter_defaults = dict(
 )
 wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
 config = wandb.config
+os.environ['WANDB_MODE'] = 'dryrun'
 
 
 def generate_map(num, pop_num):
@@ -207,6 +208,8 @@ def make_gif():
     images[0].save(wandb.run.dir + '/out.gif', save_all=True,
                    append_images=images[1:], duration=400, loop=0)
     wandb.log({"transition_best_route": wandb.Video(wandb.run.dir + '/out.gif')})
+    shutil.rmtree('img')
+    os.mkdir('img')
 
 
 def main():
