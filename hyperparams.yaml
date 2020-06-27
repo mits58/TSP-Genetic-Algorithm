@@ -1,13 +1,13 @@
 program: main.py
 method: grid
 metric:
-  goal: maximize
   name: excellent_evaluate_value
+  goal: minimize
 parameters:
   pop_num:
     values: [100, 150, 200, 250, 300]
   tournament_size:
-    values: [5, 10, 30, 50, 70, 100]
+    values: [10, 30, 50, 70, 100]
   tournament_select_ratio:
     values: [0.1, 0.2, 0.4, 0.6, 0.8]
   elite_select_num:

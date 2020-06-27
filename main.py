@@ -20,6 +20,7 @@ hyperparameter_defaults = dict(
     mutation_prob=3,                # 突然変異の確率 -> [0, 100]
 )
 wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
+config = wandb.config
 
 
 def generate_map(num, pop_num):
@@ -203,9 +204,9 @@ def make_gif():
     # gif作成
     files = sorted(glob.glob('./img/*.png'))
     images = list(map(lambda file: Image.open(file), files))
-    images[0].save('./img/out.gif', save_all=True, append_images=images[1:],
-                   duration=400, loop=0)
-    wandb.log({"transition_best_route": wandb.Video("./img/out.gif")})
+    images[0].save('./img/out.gif', save_all=True,
+                   append_images=images[1:], duration=400, loop=0)
+    wandb.log({"transition_best_route": wandb.Video('./img/out.gif')})
 
 
 def main():
@@ -218,7 +219,7 @@ def main():
     os.mkdir('img')
 
     # 初期マップ生成
-    position_info, all_route = generate_map(num_city, wandb.config.pop_num)
+    position_info, all_route = generate_map(num_city, config.pop_num)
 
     # 初期評価
     evaluate_value = evaluate(position_info, all_route)
@@ -227,23 +228,23 @@ def main():
     for loop in range(generation_num):
         # 選択
         select_pop, elite_pop = selection(
-            all_route, evaluate_value, wandb.config.tournament_select_ratio,
-            wandb.config.tournament_size, wandb.config.elite_select_num,
+            all_route, evaluate_value, config.tournament_select_ratio,
+            config.tournament_size, config.elite_select_num,
             ascending=False)
 
         # 選択した個体の中から2個体選択し交叉や突然変異を適用する。
         next_pop = []
         while True:
             # 交叉
-            pop_1, pop_2 = crossover(select_pop, wandb.config.crossover_prob)
+            pop_1, pop_2 = crossover(select_pop, config.crossover_prob)
             # 突然変異
-            pop_1 = mutation(pop_1, wandb.config.mutation_prob)
-            pop_2 = mutation(pop_2, wandb.config.mutation_prob)
+            pop_1 = mutation(pop_1, config.mutation_prob)
+            pop_2 = mutation(pop_2, config.mutation_prob)
 
             next_pop.append(pop_1)
             next_pop.append(pop_2)
 
-            if len(next_pop) >= wandb.config.pop_num - wandb.config.elite_select_num:
+            if len(next_pop) >= config.pop_num - config.elite_select_num:
                 break
 
         # エリート主義。優良個体を次世代へ継承。
