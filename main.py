@@ -11,15 +11,6 @@ from PIL import Image
 import wandb
 
 rnd.seed(1124)
-hyperparameter_defaults = dict(
-    pop_num=200,                    # 個体数 -> [100, 300]
-    tournament_size=10,             # トーナメントのサイズ -> [5, 100]
-    tournament_select_ratio=0.2,    # トーナメントから何割残すか -> [0, 1]
-    elite_select_num=1,             # エリートを何個残すか -> [1, 20]
-    crossover_prob=50,              # 交叉の確率 -> [0, 100]
-    mutation_prob=3,                # 突然変異の確率 -> [0, 100]
-)
-wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
 config = wandb.config
 os.environ['WANDB_MODE'] = 'dryrun'
 
@@ -213,6 +204,16 @@ def make_gif():
 
 
 def main():
+    hyperparameter_defaults = dict(
+        pop_num=200,                    # 個体数 -> [100, 300]
+        tournament_size=10,             # トーナメントのサイズ -> [5, 100]
+        tournament_select_ratio=0.2,    # トーナメントから何割残すか -> [0, 1]
+        elite_select_num=1,             # エリートを何個残すか -> [1, 20]
+        crossover_prob=50,              # 交叉の確率 -> [0, 100]
+        mutation_prob=3,                # 突然変異の確率 -> [0, 100]
+    )
+    wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
+
     # 定数
     num_city = 30  # 都市の数
     generation_num = 200  # 世代数
