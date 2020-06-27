@@ -1,7 +1,9 @@
 program: main.py
 method: grid
+controller:
+  type: local
 metric:
-  name: excellent_evaluate_value
+  name: last_best_value
   goal: minimize
 parameters:
   pop_num:

@@ -19,9 +19,9 @@ hyperparameter_defaults = dict(
     crossover_prob=50,              # 交叉の確率 -> [0, 100]
     mutation_prob=3,                # 突然変異の確率 -> [0, 100]
 )
-wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
 config = wandb.config
 os.environ['WANDB_MODE'] = 'dryrun'
+wandb.init(config=hyperparameter_defaults, project="tsp-genetic-algorithm")
 
 
 def generate_map(num, pop_num):
@@ -201,13 +201,14 @@ def save_route(position_info, route, excellent_evaluate_value, loop=0):
     plt.close()
 
 
-def make_gif():
+def make_gif(last_value):
     # gif作成
     files = sorted(glob.glob('./img/*.png'))
     images = list(map(lambda file: Image.open(file), files))
     images[0].save(wandb.run.dir + '/out.gif', save_all=True,
                    append_images=images[1:], duration=400, loop=0)
-    wandb.log({"transition_best_route": wandb.Video(wandb.run.dir + '/out.gif')})
+    wandb.log({"transition_best_route": wandb.Video(wandb.run.dir + '/out.gif'),
+               "last_best_value": last_value})
     shutil.rmtree('img')
     os.mkdir('img')
 
@@ -260,7 +261,7 @@ def main():
         all_route = next_pop
 
     # gifの作成と記録
-    make_gif()
+    make_gif(min(evaluate_value))
 
 
 if __name__ == '__main__':
