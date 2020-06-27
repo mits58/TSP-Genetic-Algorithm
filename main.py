@@ -204,9 +204,9 @@ def make_gif():
     # gif作成
     files = sorted(glob.glob('./img/*.png'))
     images = list(map(lambda file: Image.open(file), files))
-    images[0].save('./img/out.gif', save_all=True,
+    images[0].save(wandb.run.dir + '/out.gif', save_all=True,
                    append_images=images[1:], duration=400, loop=0)
-    wandb.log({"transition_best_route": wandb.Video('./img/out.gif')})
+    wandb.log({"transition_best_route": wandb.Video(wandb.run.dir + '/out.gif')})
 
 
 def main():
